@@ -9,43 +9,83 @@ function App() {
         <img src={logo} className="App-logo" alt="logo" />
         <p>testing testing</p>
           <code>hola</code>
-          <ScoreRow initialTitle={"primary"} initialScores={[16,0,0,0,1]}/>
+          <ScoreBoard/>
       </header>
-        <code>ok</code>
     </div>
   );
 }
 
-const Beuton = ({x}) => {
-    const [initial, modify] = React.useState(x)
+
+const ScoreBox = ({value, notify}) => {
+    const [initial, modify] = React.useState(value)
     function update(event) {
-        modify(event.target.value);
+        let num = parseInt(event.target.value)
+        modify(num);
+        notify(num);
     }
     return (
-        <span className="Beuton">
-            <input type="number" value={initial} onChange={update}/>
+        <span className="ScoreBox" style={{width: "20px"}}>
+            <input style={{width: "30px"}} type="number" value={initial} onChange={update}/>
         </span>
     )
 };
+
+const TitleBox = ({value, notify, readonly}) => {
+    const [initial, modify] = React.useState(value)
+    function update(event) {
+        modify(event.target.value)
+        notify(event.target.value)
+    }
+    return (
+        <span className="TitleBox">
+            <input type="text" value={initial} onChange={update}/>
+        </span>
+    )
+}
 
 class ScoreRow extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             title: props.initialTitle,
-            scores: Array(5).fill(0)
+            scores: props.initialScores,
+            isPrimary: false
         };
-        if(Array.isArray(props.initialScores) && props.initialScores.length === 5) {
-          this.state.scores = props.initialScores;
-        }
     }
+
+    updateScore(pos) {
+        return (elem) => {
+            let scores = this.state.scores
+            scores[pos] = elem
+            this.setState({scores: scores})
+        };
+    }
+
+    updateTitle(title) {
+        this.setState({title: title})
+    }
+
     render() {
-        const rows = this.state.scores.map((e, i) => <Beuton x={e}/>)
+        const rows = this.state.scores.map((e, i) => <ScoreBox value={e} notify={this.updateScore(i)}/>)
         return (
             <div className="ScoreRow">
-                <input type="text" value={this.state.title}/>
+                <TitleBox value={this.state.title} notify={this.updateTitle} readonly={this.state.isPrimary}/>
                 {rows}
-                <input type="number" value={this.state.scores.reduce((acc, x) => acc + x, 0)}/>
+                <input style={{width: "30px"}} type="number" readOnly={true} value={this.state.scores.reduce((acc, x) => acc + x, 0)}/>
+            </div>
+        )
+    }
+}
+
+class ScoreBoard extends React.Component {
+    render() {
+        return (
+            <div className="ScoreBoard">
+            <ScoreRow initialTitle={"primary"} initialScores={[16,0,0,0,1]}/>
+            <ScoreRow initialTitle={"plant potato"} initialScores={[0,0,0,0,1]}/>
+            <ScoreRow initialTitle={"grow potato"} initialScores={[16,0,4,0,1]}/>
+            <ScoreRow initialTitle={"eat potato"} initialScores={[1,0,0,0,1]}/>
+            <ScoreRow initialTitle={"play games on potato"} initialScores={[6,0,0,0,1]}/>
             </div>
         )
     }
