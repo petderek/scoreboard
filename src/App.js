@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import React from "react";
 
@@ -6,10 +5,19 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>testing testing</p>
-          <code>hola</code>
-          <ScoreBoard/>
+          <ScoreBoard
+              id="player-one"
+              team="loopy loopers"
+              initialObjectives={["Primary", "Plant Potato", "Grow Potato", "Eat Potato", "Play Games On Potato"]}
+              initialScore={[
+                  [1,2,3,4,5],
+                  [0,0,0,0,1],
+                  [16,0,4,0,1],
+                  [1,0,0,0,1],
+                  [6,0,0,0,1]
+              ]}
+          />
+          <br />
       </header>
     </div>
   );
@@ -18,8 +26,10 @@ function App() {
 
 const ScoreBox = ({value, notify}) => {
     const [initial, modify] = React.useState(value)
+    console.log("init box")
     function update(event) {
-        let num = parseInt(event.target.value)
+        console.log("update box")
+        let num = parseInt(event.target.value);
         modify(num);
         notify(num);
     }
@@ -30,11 +40,12 @@ const ScoreBox = ({value, notify}) => {
     )
 };
 
-const TitleBox = ({value, notify, readonly}) => {
+const TitleBox = ({value, notify}) => {
     const [initial, modify] = React.useState(value)
     function update(event) {
-        modify(event.target.value)
-        notify(event.target.value)
+        let text = event.target.value;
+        modify(text);
+        notify(text);
     }
     return (
         <span className="TitleBox">
@@ -46,46 +57,82 @@ const TitleBox = ({value, notify, readonly}) => {
 class ScoreRow extends React.Component {
     constructor(props) {
         super(props);
+        console.log("init row")
         this.state = {
             title: props.initialTitle,
             scores: props.initialScores,
-            isPrimary: false
+            notify: props.notify,
         };
     }
 
     updateScore(pos) {
         return (elem) => {
-            let scores = this.state.scores
-            scores[pos] = elem
-            this.setState({scores: scores})
+            console.log("redraw row")
+            let scores = this.state.scores;
+            scores[pos] = elem;
+            this.setState({scores: scores});
+            this.state.notify(scores)
         };
     }
 
-    updateTitle(title) {
-        this.setState({title: title})
+    updateTitle() {
+        return (x) => this.setState({title: x});
     }
 
     render() {
-        const rows = this.state.scores.map((e, i) => <ScoreBox value={e} notify={this.updateScore(i)}/>)
+        const rows = this.state.scores.map((e, i) => <ScoreBox key={i} value={e} notify={this.updateScore(i)}/>)
         return (
             <div className="ScoreRow">
-                <TitleBox value={this.state.title} notify={this.updateTitle} readonly={this.state.isPrimary}/>
+                <TitleBox value={this.state.title} notify={this.updateTitle} />
                 {rows}
-                <input style={{width: "30px"}} type="number" readOnly={true} value={this.state.scores.reduce((acc, x) => acc + x, 0)}/>
+                <input style={{width: "30px"}} type="number" value={this.state.scores.reduce((acc, x) => acc + x, 0)}/>
             </div>
         )
     }
 }
 
 class ScoreBoard extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            team: this.props.team,
+            score: this.props.initialScore,
+            objectives: this.props.initialObjectives,
+        }
+    }
+    updateScoreRow(pos) {
+        return (elem) => {
+            let score = this.state.score;
+            score[pos] = elem
+            this.setState({
+                score: score,
+            })
+        }
+    }
+
+    updateName() {
+        return (name) => {
+            this.setState({name: name})
+        }
+    }
     render() {
+        let rows = this.state.score.map((e, i) =>
+            <ScoreRow
+                key={i}
+                initialTitle={this.state.objectives[i]}
+                initialScores={e}
+                notify={this.updateScoreRow(i)}
+            />
+        )
+        let totalScore = this.state.score.reduce((acc, e) =>
+            acc + e.reduce((acc, e) => acc + e, 0),
+            10
+        );
         return (
             <div className="ScoreBoard">
-            <ScoreRow initialTitle={"primary"} initialScores={[16,0,0,0,1]}/>
-            <ScoreRow initialTitle={"plant potato"} initialScores={[0,0,0,0,1]}/>
-            <ScoreRow initialTitle={"grow potato"} initialScores={[16,0,4,0,1]}/>
-            <ScoreRow initialTitle={"eat potato"} initialScores={[1,0,0,0,1]}/>
-            <ScoreRow initialTitle={"play games on potato"} initialScores={[6,0,0,0,1]}/>
+                <TitleBox value={this.state.team} notify={this.updateName()} />
+                {rows}
+                <div>Total: {totalScore}</div>
             </div>
         )
     }
