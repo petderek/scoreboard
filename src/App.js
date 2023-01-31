@@ -30,6 +30,10 @@ const ScoreBox = ({value, notify}) => {
     function update(event) {
         console.log("update box")
         let num = parseInt(event.target.value);
+        if(num < 0 || isNaN(num)) {
+            // no negatives or blank space, coerce to 0
+            num = 0;
+        }
         modify(num);
         notify(num);
     }
@@ -85,7 +89,7 @@ class ScoreRow extends React.Component {
             <div className="ScoreRow">
                 <TitleBox value={this.state.title} notify={this.updateTitle} />
                 {rows}
-                <input style={{width: "30px"}} type="number" value={this.state.scores.reduce((acc, x) => acc + x, 0)}/>
+                <input style={{width: "30px"}} type="number" value={this.state.scores.reduce(sumFn)}/>
             </div>
         )
     }
@@ -124,8 +128,9 @@ class ScoreBoard extends React.Component {
                 notify={this.updateScoreRow(i)}
             />
         )
+        // sum of sums, +10
         let totalScore = this.state.score.reduce((acc, e) =>
-            acc + e.reduce((acc, e) => acc + e, 0),
+            acc + e.reduce(sumFn),
             10
         );
         return (
@@ -136,6 +141,10 @@ class ScoreBoard extends React.Component {
             </div>
         )
     }
+}
+
+function sumFn(runningTotal, val) {
+    return runningTotal + val
 }
 
 export default App;
