@@ -4,7 +4,7 @@ import React from "react";
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
+      <div className="container">
           <ScoreBoard
               id="player-one"
               team="loopy loopers"
@@ -17,29 +17,44 @@ function App() {
                   [6,0,0,0,1]
               ]}
           />
-          <br />
-      </header>
+          <ScoreBoard
+              id="player-two"
+              team="loopy loopers"
+              initialObjectives={["Primary", "Plant Potato", "Grow Potato", "Eat Potato", "Play Games On Potato"]}
+              initialScore={[
+                  [1,2,3,4,5],
+                  [0,0,0,0,1],
+                  [16,0,4,0,1],
+                  [1,0,0,0,1],
+                  [6,0,0,0,1]
+              ]}
+          />
+      </div>
     </div>
   );
 }
 
 
 const ScoreBox = ({value, notify}) => {
-    const [initial, modify] = React.useState(value)
-    console.log("init box")
-    function update(event) {
-        console.log("update box")
-        let num = parseInt(event.target.value);
-        if(num < 0 || isNaN(num)) {
+    const [score, modify] = React.useState(value)
+    function update(x, y) {
+        let newScore = x + y
+        if(newScore < 0 || isNaN(newScore)) {
             // no negatives or blank space, coerce to 0
-            num = 0;
+            newScore = 0;
         }
-        modify(num);
-        notify(num);
+        modify(newScore);
+        notify(newScore);
     }
     return (
-        <span className="ScoreBox" style={{width: "20px"}}>
-            <input style={{width: "30px"}} type="number" value={initial} onChange={update}/>
+        <span style={{display: "inline-block", margin: "5px"}} className="ScoreBox">
+            <span style={{display: "inline"}}>
+                <button className="lil"  onClick={() => update(score, -1)}>-</button>
+            </span>
+            <input style={{width:"10px"}} type="number" value={score} readOnly={true}/>
+            <span style={{display: "inline"}}>
+                <button className="lil" onClick={() => update(score, 1)}>+</button>
+            </span>
         </span>
     )
 };
@@ -89,7 +104,7 @@ class ScoreRow extends React.Component {
             <div className="ScoreRow">
                 <TitleBox value={this.state.title} notify={this.updateTitle} />
                 {rows}
-                <input style={{width: "30px"}} type="number" value={this.state.scores.reduce(sumFn)}/>
+                <input readOnly={true} style={{width: "20px"}} type="number" value={this.state.scores.reduce(sumFn)}/>
             </div>
         )
     }
@@ -135,7 +150,7 @@ class ScoreBoard extends React.Component {
         );
         return (
             <div className="ScoreBoard">
-                <TitleBox value={this.state.team} notify={this.updateName()} />
+                Team: <TitleBox value={this.state.team} notify={this.updateName()} />
                 {rows}
                 <div>Total: {totalScore}</div>
             </div>
